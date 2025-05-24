@@ -3,6 +3,7 @@ package com.nafis.task_manager.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nafis.task_manager.cache.TaskCache;
 import com.nafis.task_manager.dto.Task;
 import com.nafis.task_manager.exception.TaskNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -22,7 +24,28 @@ public class TaskRetriever {
     @Value("${task.folder.path:/home/nafis/Documents}")
     private String taskFolderPath;
 
+    public final TaskCache taskCache = new TaskCache();
+
     public Task getById(String id) {
+
+        return taskCache
+                .getTask(id)
+                .orElseGet(() -> fetchAndCacheTask(id));
+    }
+
+    public Task fetchAndCacheTask(String id) {
+
+        log.info("Task not found in cache. Fetching from file directory.");
+
+        return fetchFromFileDirectory(id)
+                .map(task -> {
+                    taskCache.putTask(id, task);
+                    return task;
+                })
+                .orElseThrow(() -> new TaskNotFoundException(id));
+    }
+
+    public Optional<Task> fetchFromFileDirectory(String id) {
 
         final var folder = "/Tasks";
 
@@ -33,12 +56,14 @@ public class TaskRetriever {
 
             log.error("Task with id {} not found", id);
 
-            throw new TaskNotFoundException("Task not found with ID: " + id);
+            throw new TaskNotFoundException(id);
         }
 
         try {
 
-            return objectMapper.readValue(file, Task.class);
+            final var task = objectMapper.readValue(file, Task.class);
+
+            return Optional.of(task);
 
         } catch (JsonProcessingException e) {
 
