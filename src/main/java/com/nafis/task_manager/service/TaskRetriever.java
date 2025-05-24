@@ -15,6 +15,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 @Slf4j
 @Service
 public class TaskRetriever {
@@ -27,6 +29,8 @@ public class TaskRetriever {
     private final TaskCache taskCache = new TaskCache();
 
     public Task getById(String id) {
+
+        checkArgument(!id.isEmpty(), "Task id cannot be empty");
 
         return taskCache
                 .getTask(id)
