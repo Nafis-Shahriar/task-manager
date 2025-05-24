@@ -24,7 +24,7 @@ public class TaskRetriever {
     @Value("${task.folder.path:/home/nafis/Documents}")
     private String taskFolderPath;
 
-    public final TaskCache taskCache = new TaskCache();
+    private final TaskCache taskCache = new TaskCache();
 
     public Task getById(String id) {
 
@@ -33,7 +33,7 @@ public class TaskRetriever {
                 .orElseGet(() -> fetchAndCacheTask(id));
     }
 
-    public Task fetchAndCacheTask(String id) {
+    private Task fetchAndCacheTask(String id) {
 
         log.info("Task not found in cache. Fetching from file directory.");
 
@@ -45,7 +45,7 @@ public class TaskRetriever {
                 .orElseThrow(() -> new TaskNotFoundException(id));
     }
 
-    public Optional<Task> fetchFromFileDirectory(String id) {
+    private Optional<Task> fetchFromFileDirectory(String id) {
 
         final var folder = "/Tasks";
 
