@@ -1,5 +1,6 @@
 package com.nafis.task_manager.cache;
 
+import com.nafis.task_manager.configuration.AppProperties;
 import com.nafis.task_manager.dto.Task;
 
 import java.util.Optional;
@@ -9,9 +10,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class TaskCache {
 
-    private static final int MAX_SIZE = 5;
+    private final AppProperties appProperties = new AppProperties();
 
-    private final LRUCache<String, Task> cache = new LRUCache<>(MAX_SIZE);
+    private final LRUCache<String, Task> cache = new LRUCache<>(appProperties.getMaxCacheSize());
 
     public Optional<Task> getTask(String taskId) {
 

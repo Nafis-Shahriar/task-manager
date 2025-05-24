@@ -4,11 +4,12 @@ package com.nafis.task_manager.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nafis.task_manager.cache.TaskCache;
+import com.nafis.task_manager.configuration.AppProperties;
 import com.nafis.task_manager.dto.Task;
 import com.nafis.task_manager.exception.TaskNotFoundException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.InternalException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -19,12 +20,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TaskRetriever {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${task.folder.path:/home/nafis/Documents}")
-    private String taskFolderPath;
+    private final AppProperties appProperties;
 
     private final TaskCache taskCache = new TaskCache();
 
@@ -51,9 +52,12 @@ public class TaskRetriever {
 
     private Optional<Task> fetchFromFileDirectory(String id) {
 
-        final var folder = "/Tasks";
+        final var directory = appProperties.getRootDirectory() + appProperties.getTaskFolder();
 
-        Path filePath = Path.of(taskFolderPath + folder, id + ".json");
+        log.info("Fetching task from file directory - {}", directory);
+
+        Path filePath = Path.of(directory, id + ".json");
+
         File file = filePath.toFile();
 
         if (!file.exists() || !file.isFile()) {
